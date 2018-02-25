@@ -1,7 +1,6 @@
 ﻿using System;
 using System.ComponentModel;
 using System.IO;
-using System.Runtime.InteropServices;
 using System.Text;
 using System.Text.RegularExpressions;
 
@@ -12,7 +11,6 @@ namespace SubstManager
     /// </summary>
     public class Drive : INotifyPropertyChanged
     {
-       
         private static readonly string MSG_NO_ASSIGNMENT = "---------- 割り当て無し ----------";
         private string _description;
         private DriveStatus _staus;
@@ -29,7 +27,7 @@ namespace SubstManager
             }
 
             Name = driveName;
-            Description = GetDriveDescription( driveName ) ?? MSG_NO_ASSIGNMENT;
+            Description = WinApiNativeMethods.GetDriveDescription( driveName ) ?? MSG_NO_ASSIGNMENT;
             Status = GetDriveStatus( driveName );
         }
 
@@ -72,14 +70,14 @@ namespace SubstManager
         /// <param name="folderPath"></param>
         public void Assign( string folderPath )
         {
-            if ( IsAvailable( Status ) && Directory.Exists( folderPath ) )
+            if ( IsAssignable( this, folderPath ) )
             {
-                NativeMethods.DefineDosDevice( NativeMethods.DRIVE_ASSIGN, Name, folderPath );
+                WinApiNativeMethods.AssignDrive( Name, folderPath );
                 Description = folderPath;
             }
             else
             {
-                NativeMethods.DefineDosDevice( NativeMethods.DRIVE_UNASSIGN, Name, null );
+                WinApiNativeMethods.UnassignDrive( Name );
                 Description = MSG_NO_ASSIGNMENT;
             }
 
@@ -87,24 +85,6 @@ namespace SubstManager
         }
 
         
-
-        /// <summary>
-        /// ドライブの説明を取得する。
-        /// 取得に失敗または説明がない場合はnullを返す。
-        /// </summary>
-        /// <param name="driveName"></param>
-        /// <returns></returns>
-        private string GetDriveDescription( string driveName )
-        {
-            const int MAX_LENGTH = 300;
-            var buffer = new StringBuilder( MAX_LENGTH );
-
-            var success = NativeMethods.QueryDosDevice( driveName, buffer, buffer.Capacity );
-            if ( success == 0 ) return null;
-
-            var description = buffer.ToString();
-            return string.IsNullOrEmpty( description ) ? null : description;
-        }
 
         /// <summary>
         /// ドライブの状態を取得する。
@@ -138,11 +118,18 @@ namespace SubstManager
         }
 
         /// <summary>
-        /// ドライブが使用可能か
+        /// 割り当て可能か
         /// </summary>
         /// <param name="driveStatus"></param>
         /// <returns></returns>
-        private bool IsAvailable( DriveStatus driveStatus ) => ( driveStatus == DriveStatus.Enable || driveStatus == DriveStatus.Busy );
+        private bool IsAssignable( Drive drive, string folderPath )
+        {
+            var isDriveEnable = drive.Status == DriveStatus.Enable;
+            var isDriveBusy = drive.Status == DriveStatus.Busy;
+            var isDirExists = Directory.Exists( folderPath );
+
+            return ( ( isDriveEnable || isDriveBusy ) && isDirExists );
+        }
 
         /// <summary>
         /// プロパティを変更した場合は、
