@@ -5,8 +5,24 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:SubstManager"
         mc:Ignorable="d"
-        Title="MainWindow" Height="350" Width="525">
-    <Grid>
-        
+        Title="SubstManager" Height="667" Width="525" ResizeMode="NoResize" SizeToContent="WidthAndHeight">
+    <Grid Margin="0,0,0,11">
+        <DataGrid x:Name="dataGrid" HorizontalAlignment="Center" Height="581" Margin="16,36,6,10" VerticalAlignment="Center" Width="497" AutoGeneratingColumn="DataGrid_AutoGeneratingColumn" HorizontalGridLinesBrush="{DynamicResource {x:Static SystemColors.AppWorkspaceBrushKey}}" VerticalGridLinesBrush="{DynamicResource {x:Static SystemColors.AppWorkspaceBrushKey}}" SelectedCellsChanged="DataGrid_SelectedCellsChanged" IsReadOnly="True" ItemsSource="{Binding}">
+            <DataGrid.ItemContainerStyle>
+                <Style TargetType="DataGridRow">
+                    <Style.Triggers>
+                        <DataTrigger Binding="{Binding Status}" Value="Enable">
+                            <Setter Property="Background" Value="LightGreen" />
+                        </DataTrigger>
+                        <DataTrigger Binding="{Binding Status}" Value="Disable">
+                            <Setter Property="Background" Value="LightGray" />
+                        </DataTrigger>
+                        <DataTrigger Binding="{Binding Status}" Value="Busy">
+                            <Setter Property="Background" Value="LightBlue" />
+                        </DataTrigger>
+                    </Style.Triggers>
+                </Style>
+            </DataGrid.ItemContainerStyle>
+        </DataGrid>
     </Grid>
 </Window>

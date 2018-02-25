@@ -1,7 +1,6 @@
 ﻿using System;
 using System.ComponentModel;
 using System.IO;
-using System.Text;
 using System.Text.RegularExpressions;
 
 namespace SubstManager
@@ -21,7 +20,7 @@ namespace SubstManager
         /// <param name="driveName"></param>
         public Drive( string driveName )
         {
-            if ( string.IsNullOrEmpty( driveName ) || !new Regex( @"[A-Z:\]" ).IsMatch( driveName ) )
+            if ( string.IsNullOrEmpty( driveName ) || !new Regex( "[A-Z:]" ).IsMatch( driveName ) )
             {
                 throw new ArgumentException();  // ドライブ名が不正
             }
@@ -84,7 +83,7 @@ namespace SubstManager
             Status = GetDriveStatus( Name );
         }
 
-        
+        public override string ToString() => $"{Name}, {Status}, {Description}";
 
         /// <summary>
         /// ドライブの状態を取得する。
@@ -137,6 +136,12 @@ namespace SubstManager
         /// </summary>
         /// <param name="propertyName"></param>
         private void OnPropertyChanged( string propertyName )
-            => PropertyChanged( this, new PropertyChangedEventArgs( propertyName ) );
+        {
+            var handler = PropertyChanged;
+            if ( handler != null )
+            {
+                PropertyChanged( this, new PropertyChangedEventArgs( propertyName ) );
+            }
+        }
     }
 }
