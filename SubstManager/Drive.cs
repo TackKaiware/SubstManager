@@ -12,8 +12,7 @@ namespace SubstManager
     /// </summary>
     public class Drive : INotifyPropertyChanged
     {
-        private const int DRIVE_ASSIGN = 0;
-        private const int DRIVE_UNASSIGN = 2;
+       
         private static readonly string MSG_NO_ASSIGNMENT = "---------- 割り当て無し ----------";
         private string _description;
         private DriveStatus _staus;
@@ -75,37 +74,19 @@ namespace SubstManager
         {
             if ( IsAvailable( Status ) && Directory.Exists( folderPath ) )
             {
-                DefineDosDevice( DRIVE_ASSIGN, Name, folderPath );
+                NativeMethods.DefineDosDevice( NativeMethods.DRIVE_ASSIGN, Name, folderPath );
                 Description = folderPath;
             }
             else
             {
-                DefineDosDevice( DRIVE_UNASSIGN, Name, null );
+                NativeMethods.DefineDosDevice( NativeMethods.DRIVE_UNASSIGN, Name, null );
                 Description = MSG_NO_ASSIGNMENT;
             }
 
             Status = GetDriveStatus( Name );
         }
 
-        /// <summary>
-        /// アプリケーションで、MS-DOS デバイス名の定義、再定義、または削除を実行します。
-        /// </summary>
-        /// <param name="dwFlags"></param>
-        /// <param name="lpDeviceName"></param>
-        /// <param name="lpTargetPath"></param>
-        /// <returns></returns>
-        [DllImport( "kernel32.dll" )]
-        private static extern bool DefineDosDevice( int dwFlags, string lpDeviceName, string lpTargetPath );
-
-        /// <summary>
-        /// アプリケーションで MS-DOS デバイス名に関する情報を取得できるようにします。
-        /// </summary>
-        /// <param name="lpDeviceName"></param>
-        /// <param name="lpTargetPath"></param>
-        /// <param name="ucchMax"></param>
-        /// <returns></returns>
-        [DllImport( "kernel32.dll" )]
-        private static extern uint QueryDosDevice( string lpDeviceName, StringBuilder lpTargetPath, int ucchMax );
+        
 
         /// <summary>
         /// ドライブの説明を取得する。
@@ -118,7 +99,7 @@ namespace SubstManager
             const int MAX_LENGTH = 300;
             var buffer = new StringBuilder( MAX_LENGTH );
 
-            var success = QueryDosDevice( driveName, buffer, buffer.Capacity );
+            var success = NativeMethods.QueryDosDevice( driveName, buffer, buffer.Capacity );
             if ( success == 0 ) return null;
 
             var description = buffer.ToString();
